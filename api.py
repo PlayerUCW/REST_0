@@ -42,16 +42,23 @@ def create_job():
                   'start_date', 'end_date', 'is_finished']):
         return jsonify({'error': 'Bad request'})
     db_sess = db_session.create_session()
+    if not db_sess.query(User).filter(User.id == request.json['team_leader']).first():
+        return jsonify({'error': 'No such a teamleader'})
     if db_sess.query(Jobs).filter(Jobs.id == request.json['id']).first():
         return jsonify({'error': 'ID already exists'})
+    try:
+        startdate = datetime.datetime.strptime(request.json['start_date'], "%m/%d/%Y, %H:%M:%S")
+        enddate = datetime.datetime.strptime(request.json['end_date'], "%m/%d/%Y, %H:%M:%S")
+    except ValueError:
+        return jsonify({'error': 'Your data is kinda messed up'})
     jobs = Jobs(
         id=request.json['id'],
         team_leader=request.json['team_leader'],
         job = request.json['job'],
         work_size = request.json['work_size'],
         collaborators = request.json['collaborators'],
-        start_date = datetime.datetime.strptime(request.json['start_date'], "%m/%d/%Y, %H:%M:%S"),
-        end_date = datetime.datetime.strptime(request.json['end_date'], "%m/%d/%Y, %H:%M:%S"),
+        start_date = startdate,
+        end_date = enddate,
         is_finished = request.json['is_finished'],
     )
     db_sess.add(jobs)
