@@ -34,7 +34,6 @@ def get_one_job(jobs_id):
 
 @blueprint.route('/api/jobs', methods=['POST'])
 def create_job():
-    print('\n', 'gae', '\n')
     if not request.json:
         return jsonify({'error': 'Empty request'})
     elif not all(key in request.json for key in
@@ -50,7 +49,7 @@ def create_job():
         startdate = datetime.datetime.strptime(request.json['start_date'], "%m/%d/%Y, %H:%M:%S")
         enddate = datetime.datetime.strptime(request.json['end_date'], "%m/%d/%Y, %H:%M:%S")
     except ValueError:
-        return jsonify({'error': 'Your data is kinda messed up'})
+        return jsonify({'error': 'Very bad dates'})
     jobs = Jobs(
         id=request.json['id'],
         team_leader=request.json['team_leader'],
@@ -63,6 +62,38 @@ def create_job():
     )
     db_sess.add(jobs)
     db_sess.commit()
+    return jsonify({'success': 'OK'})
+
+
+@blueprint.route('/api/jobs/<int:jobs_id>', methods=['POST'])
+def edit_job(jobs_id):
+    if not request.json:
+        return jsonify({'error': 'Empty request'})
+    elif not all(key in request.json for key in
+                 ['team_leader', 'job', 'work_size', 'collaborators',
+                  'start_date', 'end_date', 'is_finished']):
+        return jsonify({'error': 'Bad request'})
+    db_sess = db_session.create_session()
+    if not db_sess.query(User).filter(User.id == request.json['team_leader']).first():
+        return jsonify({'error': 'No such a teamleader'})
+    try:
+        startdate = datetime.datetime.strptime(request.json['start_date'], "%m/%d/%Y, %H:%M:%S")
+        enddate = datetime.datetime.strptime(request.json['end_date'], "%m/%d/%Y, %H:%M:%S")
+    except ValueError:
+        return jsonify({'error': 'Very bad dates'})
+
+    base = db_session.create_session()
+    job = base.query(Jobs).filter(Jobs.id == jobs_id).first()
+    if not job:
+        return jsonify({'error': 'No such ID'})
+    job.team_leader=request.json['team_leader']
+    job.job = request.json['job']
+    job.work_size = request.json['work_size']
+    job.collaborators = request.json['collaborators']
+    job.start_date = startdate
+    job.end_date = enddate
+    job.is_finished = request.json['is_finished']
+    base.commit()
     return jsonify({'success': 'OK'})
 
 
