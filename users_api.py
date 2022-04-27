@@ -28,7 +28,7 @@ def get_one_user(user_id):
     if not users:
         return jsonify({'error': 'Not found'})
     return jsonify(
-        {'jobs': users.to_dict()}
+        {'users': users.to_dict()}
     )
 
 

@@ -5,6 +5,7 @@ from flask_login import LoginManager, login_user, login_required,\
 from data import db_session
 from data.__all_models import *
 from data.forms import *
+import requests
 import datetime
 import random
 import api
@@ -121,6 +122,18 @@ def add_news():
         return redirect('/')
     return render_template('redactor.html', title='Добавление работы',
                            form=form)
+
+
+@app.route('/users_show/<int:user_id>')
+def nostalgee(user_id):
+    user = requests.get(f'http://localhost:5000/api/users/{user_id}').json()['users']
+    coords = requests.get(f'http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&'
+                          f'geocode={user["city_from"]}&format=json').json()["response"][
+        "GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"]["pos"]
+    with open('static/map.png', 'wb') as img:
+        img.write(requests.get(f'http://static-maps.yandex.ru/1.x/?ll={coords.replace(" ", ",")}&spn=0.1,0.1&l=sat').content)
+    return render_template('show.html', title='Родной город', city=user['city_from'],
+                           fname=user['name'] + ' ' + user['surname'])
 
 
 def main():
