@@ -8,6 +8,7 @@ from data.forms import *
 import datetime
 import random
 import api
+import users_api
 
 
 app = Flask(__name__)
@@ -125,6 +126,7 @@ def add_news():
 def main():
     db_session.global_init("db/mars.db")
     app.register_blueprint(api.blueprint)
+    app.register_blueprint(users_api.blueprint)
     app.run()
 
 

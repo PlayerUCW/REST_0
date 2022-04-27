@@ -13,10 +13,10 @@ blueprint = flask.Blueprint(
 @blueprint.route('/api/jobs')
 def get_jobs():
     db_sess = db_session.create_session()
-    news = db_sess.query(Jobs).all()
+    jobs = db_sess.query(Jobs).all()
     return jsonify(
         {
-            'news': [item.to_dict() for item in news]
+            'jobs': [item.to_dict() for item in jobs]
         }
     )
 
@@ -24,11 +24,11 @@ def get_jobs():
 @blueprint.route('/api/jobs/<int:jobs_id>', methods=['GET'])
 def get_one_job(jobs_id):
     db_sess = db_session.create_session()
-    news = db_sess.query(Jobs).get(jobs_id)
-    if not news:
+    jobs = db_sess.query(Jobs).get(jobs_id)
+    if not jobs:
         return jsonify({'error': 'Not found'})
     return jsonify(
-        {'jobs': news.to_dict()}
+        {'jobs': jobs.to_dict()}
     )
 
 
@@ -53,12 +53,12 @@ def create_job():
     jobs = Jobs(
         id=request.json['id'],
         team_leader=request.json['team_leader'],
-        job = request.json['job'],
-        work_size = request.json['work_size'],
-        collaborators = request.json['collaborators'],
-        start_date = startdate,
-        end_date = enddate,
-        is_finished = request.json['is_finished'],
+        job=request.json['job'],
+        work_size=request.json['work_size'],
+        collaborators=request.json['collaborators'],
+        start_date=startdate,
+        end_date=enddate,
+        is_finished=request.json['is_finished']
     )
     db_sess.add(jobs)
     db_sess.commit()
